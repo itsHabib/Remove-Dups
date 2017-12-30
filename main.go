@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,16 +19,23 @@ var minusDup *int
 // used to delete all duplicates example(1)...example(n), ignores the -dup flag
 var minusAll *bool
 
+//used to show files that are being deleted
+var minusVerbose *bool
+
 // traverses through each file in the path given deleting files based
 // on flags given
 func walkAndDelete(path string, f os.FileInfo, err error) error {
 	// depending on whether -all or -dup is used, the regex string is different
 	// one to search for all numbers in parentheses or one to search with value
 	// of dup flag
-	if *minusAll {
+	if *minusDup == 0 && !*minusAll {
 		fileRegexString = "\\w+\\([1-9]\\d*\\)($|\\.\\w+$)"
-	} else {
+	} else if *minusAll && *minusDup != 0 {
+		fileRegexString = "\\w+\\([1-9]\\d*\\)($|\\.\\w+$)"
+	} else if *minusDup != 0 {
 		fileRegexString = fmt.Sprintf("\\w+\\(%d\\)($|\\.\\w+$)", *minusDup)
+	} else {
+		fileRegexString = "\\w+\\([1-9]\\d*\\)($|\\.\\w+$)"
 	}
 	regex, err := regexp.Compile(fileRegexString)
 	if err != nil {
@@ -43,9 +51,31 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 	if regex.MatchString(fileName) {
 		err = os.Remove(fileName)
 		if err != nil {
-			fmt.Printf("Error deleting %s", fileName)
+			fmt.Printf("Error deleting %s\n", fileName)
 			return err
+		}
+		if *minusVerbose {
+			fmt.Printf("Deleted: %s\n", fileName)
 		}
 	}
 	return nil
+}
+
+func main() {
+	// Grab values of flags used
+	minusDup = flag.Int("dup", 0, "Duplicate Number to Delete")
+	minusAll = flag.Bool("all", false, "Delete all duplicate files")
+	minusVerbose = flag.Bool("v", false, "Verbose")
+	flag.Parse()
+	flags := flag.Args()
+
+	// check if path was given
+	if len(flags) == 0 {
+		fmt.Print("usage: remove_dups <path>")
+		os.Exit(1)
+	}
+	// walk and delete with path given
+	Path := flag.Arg(0)
+	Path, _ = filepath.EvalSymlinks(Path)
+	filepath.Walk(Path, walkAndDelete)
 }
