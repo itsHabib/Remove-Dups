@@ -32,13 +32,13 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 	// one to search for all numbers in parentheses or one to search with value
 	// of dup flag
 	if *minusDup == 0 && !*minusAll {
-		fileRegexString = "\\w+\\([1-9]\\d*\\)($|\\.\\w+$)"
+		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
 	} else if *minusAll && *minusDup != 0 {
-		fileRegexString = "\\w+\\([1-9]\\d*\\)($|\\.\\w+$)"
+		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
 	} else if *minusDup != 0 {
-		fileRegexString = fmt.Sprintf("\\w+\\(%d\\)($|\\.\\w+$)", *minusDup)
+		fileRegexString = fmt.Sprintf("[\\w\\s]+\\(%d\\)($|\\.\\w+$)", *minusDup)
 	} else {
-		fileRegexString = "\\w+\\([1-9]\\d*\\)($|\\.\\w+$)"
+		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
 	}
 	regex, err := regexp.Compile(fileRegexString)
 	if err != nil {
@@ -52,7 +52,7 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 	fileName := filepath.Base(path)
 	// delete file if regex matches filename
 	if regex.MatchString(fileName) {
-		err = os.Remove(fileName)
+		err = os.Remove(path)
 		if err != nil {
 			fmt.Printf("Error deleting %s\n", fileName)
 			return err
@@ -80,7 +80,11 @@ func main() {
 	}
 	// walk and delete with path given
 	Path := flag.Arg(0)
-	Path, _ = filepath.EvalSymlinks(Path)
+	Path, err := filepath.EvalSymlinks(Path)
+	if err != nil {
+		fmt.Printf("Error evaluating symlinks %v\n", err)
+		os.Exit(1)
+	}
 	filepath.Walk(Path, walkAndDelete)
-	fmt.Printf("%d files deleted.\n", numFilesDeleted)
+	fmt.Printf("%d files deleted\n", numFilesDeleted)
 }
