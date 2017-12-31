@@ -22,6 +22,9 @@ var minusAll *bool
 //used to show files that are being deleted
 var minusVerbose *bool
 
+// global variable to count # of files deleted
+var numFilesDeleted int
+
 // traverses through each file in the path given deleting files based
 // on flags given
 func walkAndDelete(path string, f os.FileInfo, err error) error {
@@ -54,6 +57,7 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 			fmt.Printf("Error deleting %s\n", fileName)
 			return err
 		}
+		numFilesDeleted++
 		if *minusVerbose {
 			fmt.Printf("Deleted: %s\n", fileName)
 		}
@@ -78,4 +82,5 @@ func main() {
 	Path := flag.Arg(0)
 	Path, _ = filepath.EvalSymlinks(Path)
 	filepath.Walk(Path, walkAndDelete)
+	fmt.Printf("%d files deleted.\n", numFilesDeleted)
 }
