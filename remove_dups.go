@@ -9,8 +9,6 @@ import (
 )
 
 // Defined as global variables to be easily used in the walk function
-// regex string dependent on -dup and -all flags
-var fileRegexString string
 
 // used to determine which filename duplicate is deleted if  -dup=1
 // is indicated only filenames with example(1) be deleted, and etc
@@ -31,6 +29,8 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 	// depending on whether -all or -dup is used, the regex string is different
 	// one to search for all numbers in parentheses or one to search with value
 	// of dup flag
+	// regex string dependent on -dup and -all flags
+	var fileRegexString string
 	if *minusDup == 0 && !*minusAll {
 		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
 	} else if *minusAll && *minusDup != 0 {
@@ -40,6 +40,7 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 	} else {
 		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
 	}
+
 	regex, err := regexp.Compile(fileRegexString)
 	if err != nil {
 		fmt.Printf("Error in Regex String:%s\n", fileRegexString)
