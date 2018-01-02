@@ -32,13 +32,13 @@ func walkAndDelete(path string, f os.FileInfo, err error) error {
 	// regex string dependent on -dup and -all flags
 	var fileRegexString string
 	if *minusDup == 0 && !*minusAll {
-		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
+		fileRegexString = "[\\w\\s]+\\(\\d+\\)($|\\.\\w+$)"
 	} else if *minusAll && *minusDup != 0 {
-		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
+		fileRegexString = "[\\w\\s]+\\(\\d+\\)($|\\.\\w+$)"
 	} else if *minusDup != 0 {
 		fileRegexString = fmt.Sprintf("[\\w\\s]+\\(%d\\)($|\\.\\w+$)", *minusDup)
 	} else {
-		fileRegexString = "[\\w\\s]+\\([1-9]\\d*\\)($|\\.\\w+$)"
+		fileRegexString = "[\\w\\s]+\\(\\d+\\)($|\\.\\w+$)"
 	}
 
 	regex, err := regexp.Compile(fileRegexString)
